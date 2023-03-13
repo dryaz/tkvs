@@ -2,6 +2,8 @@ package com.dimlix.tkvs.domain
 
 interface KeyValueRepository {
 
+    // TODO: Maybe worth to make contract suspendable and/or return flow by default to gain
+    //  more flexibility in case some long running action couldbe held and we need progress of it.
     fun proceed(action: Action): Result<String?>
 
 }
