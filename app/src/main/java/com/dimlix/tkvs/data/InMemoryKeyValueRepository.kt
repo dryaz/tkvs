@@ -2,8 +2,9 @@ package com.dimlix.tkvs.data
 
 import com.dimlix.tkvs.domain.KeyValueRepository
 import java.util.*
+import javax.inject.Inject
 
-class InMemoryKeyValueRepository: KeyValueRepository {
+class InMemoryKeyValueRepository @Inject constructor() : KeyValueRepository {
 
     private val storage = LinkedList<HashMap<String, String>>().apply { add(hashMapOf()) }
 
