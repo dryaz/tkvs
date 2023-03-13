@@ -4,7 +4,9 @@ import com.dimlix.tkvs.domain.Action
 import com.dimlix.tkvs.domain.KeyValueRepository
 import java.util.*
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class InMemoryKeyValueRepository @Inject constructor() : KeyValueRepository {
 
     private val storage = LinkedList<HashMap<String, String>>().apply { add(hashMapOf()) }
