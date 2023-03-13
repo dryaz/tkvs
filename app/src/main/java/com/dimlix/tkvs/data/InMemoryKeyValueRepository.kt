@@ -1,5 +1,6 @@
 package com.dimlix.tkvs.data
 
+import com.dimlix.tkvs.domain.Action
 import com.dimlix.tkvs.domain.KeyValueRepository
 import java.util.*
 import javax.inject.Inject
@@ -8,33 +9,47 @@ class InMemoryKeyValueRepository @Inject constructor() : KeyValueRepository {
 
     private val storage = LinkedList<HashMap<String, String>>().apply { add(hashMapOf()) }
 
-    override fun set(key: String, value: String) {
+    override fun proceed(action: Action): Result<String?> = when (action) {
+        Action.BeginTransaction -> beginTransaction()
+        Action.Commit -> commit()
+        Action.Rollback -> rollback()
+        is Action.Count -> count(action.value)
+        is Action.Delete -> delete(action.key)
+        is Action.Get -> get(action.key)
+        is Action.Set -> set(action.key, action.value)
+    }
+
+    private fun set(key: String, value: String): Result<String?> {
         storage.last.put(key, value)
+        return Result.success(null)
     }
 
-    override fun get(key: String): String? = storage.last.get(key)
+    private fun get(key: String): Result<String?> = Result.success(storage.last.get(key))
 
-    override fun delete(key: String) {
+    private fun delete(key: String): Result<String?> {
         storage.last.remove(key)
+        return Result.success(null)
     }
 
-    override fun count(value: String): Int = storage.last.count { it.value == value }
+    private fun count(value: String): Result<String?> =
+        Result.success(storage.last.count { it.value == value }.toString())
 
-    override fun beginTransaction() {
+    private fun beginTransaction(): Result<String?> {
         val lastNode = storage.last
         storage.add(hashMapOf<String, String>().apply { putAll(lastNode) })
+        return Result.success(null)
     }
 
-    override fun commit(): Boolean {
-        if (storage.size == 1) return false
+    private fun commit(): Result<String?> {
+        if (storage.size == 1) return Result.failure(ArrayIndexOutOfBoundsException())
         val lastNode = storage.removeLast()
         storage.last.putAll(lastNode)
-        return true
+        return Result.success(null)
     }
 
-    override fun rollback(): Boolean {
-        if (storage.size == 1) return false
+    private fun rollback(): Result<String?> {
+        if (storage.size == 1) return Result.failure(ArrayIndexOutOfBoundsException())
         storage.removeLast()
-        return true
+        return Result.success(null)
     }
 }
