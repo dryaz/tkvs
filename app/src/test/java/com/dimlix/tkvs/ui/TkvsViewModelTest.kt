@@ -100,28 +100,28 @@ internal class TkvsViewModelTest {
     fun `Apply key value command should add input as history`() {
         val viewModel = createViewModel()
         viewModel.applyCommand(TkvsViewModel.OmniboxType.SET, "a", "b")
-        viewModel.historyState.value.first shouldBe ">SET a b"
+        viewModel.historyState.value[0] shouldBe ">SET a b"
     }
 
     @Test
     fun `Apply key command should add input as history`() {
         val viewModel = createViewModel()
         viewModel.applyCommand(TkvsViewModel.OmniboxType.GET, key = "a")
-        viewModel.historyState.value.first shouldBe ">GET a"
+        viewModel.historyState.value[0] shouldBe ">GET a"
     }
 
     @Test
     fun `Apply value command should add input as history`() {
         val viewModel = createViewModel()
         viewModel.applyCommand(TkvsViewModel.OmniboxType.COUNT, value = "a")
-        viewModel.historyState.value.first shouldBe ">COUNT a"
+        viewModel.historyState.value[0] shouldBe ">COUNT a"
     }
 
     @Test
     fun `Apply command should add input as history`() {
         val viewModel = createViewModel()
         viewModel.applyCommand(TkvsViewModel.OmniboxType.BEGIN)
-        viewModel.historyState.value.first shouldBe ">BEGIN"
+        viewModel.historyState.value[0] shouldBe ">BEGIN"
     }
 
     @Test
@@ -216,18 +216,18 @@ internal class TkvsViewModelTest {
         viewModel.applyCommand(TkvsViewModel.OmniboxType.COMMIT)
         val history = viewModel.historyState.value
         history.size shouldBe 2
-        history.last shouldBe "abc"
+        history[history.size - 1] shouldBe "abc"
     }
 
     @Test
-    fun `Success response with empty message should not be added to history`() {
+    fun `Success response with empty message should be added to history`() {
         val keyValueRepository = mock<KeyValueRepository>() {
             on { proceed(Action.Commit) } doReturn Result.success("")
         }
         val viewModel = createViewModel(keyValueRepository = keyValueRepository)
         viewModel.applyCommand(TkvsViewModel.OmniboxType.COMMIT)
         val history = viewModel.historyState.value
-        history.size shouldBe 1
+        history.size shouldBe 2
     }
 
     @Test
@@ -264,7 +264,7 @@ internal class TkvsViewModelTest {
         viewModel.applyCommand(TkvsViewModel.OmniboxType.GET, key = "a")
         val history = viewModel.historyState.value
         history.size shouldBe 2
-        history.last shouldBe "abcd"
+        history[history.size - 1] shouldBe "abcd"
     }
 
     @Test
@@ -279,7 +279,7 @@ internal class TkvsViewModelTest {
         viewModel.applyCommand(TkvsViewModel.OmniboxType.DELETE, key = "a")
         val history = viewModel.historyState.value
         history.size shouldBe 2
-        history.last shouldBe "abcd"
+        history[history.size - 1] shouldBe "abcd"
     }
 
     @Test
@@ -294,7 +294,7 @@ internal class TkvsViewModelTest {
         viewModel.applyCommand(TkvsViewModel.OmniboxType.COMMIT)
         val history = viewModel.historyState.value
         history.size shouldBe 2
-        history.last shouldBe "abcd"
+        history[history.size - 1] shouldBe "abcd"
     }
 
     @Test
@@ -309,7 +309,7 @@ internal class TkvsViewModelTest {
         viewModel.applyCommand(TkvsViewModel.OmniboxType.ROLLBACK)
         val history = viewModel.historyState.value
         history.size shouldBe 2
-        history.last shouldBe "abcd"
+        history[history.size - 1] shouldBe "abcd"
     }
 
     private fun createViewModel(
