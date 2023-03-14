@@ -1,6 +1,7 @@
 package com.dimlix.tkvs.ui
 
 import android.content.Context
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
 import com.dimlix.tkvs.R
 import com.dimlix.tkvs.domain.Action
@@ -9,7 +10,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
@@ -17,12 +17,12 @@ class TkvsViewModel @Inject constructor(
     @ApplicationContext private val appContext: Context,
     private val keyValueRepository: KeyValueRepository,
 ) : ViewModel() {
-    val historyState: StateFlow<LinkedList<String>>
+    val historyState: StateFlow<SnapshotStateList<String>>
         get() = _historyState
     val omniboxState: StateFlow<OmniboxState>
         get() = _omniboxState
 
-    private val _historyState = MutableStateFlow<LinkedList<String>>(LinkedList())
+    private val _historyState = MutableStateFlow<SnapshotStateList<String>>(SnapshotStateList())
 
     private val _omniboxState = MutableStateFlow<OmniboxState>(
         OmniboxState.KeyValueAction(OmniboxType.SET)
@@ -56,7 +56,7 @@ class TkvsViewModel @Inject constructor(
             OmniboxType.COMMIT -> keyValueRepository.proceed(Action.Commit)
             OmniboxType.ROLLBACK -> keyValueRepository.proceed(Action.Rollback)
         }.onSuccess {
-            if (!it.isNullOrBlank()) data.add(it)
+            if (it != null) data.add(it)
         }.onFailure {
             val errorText = getErrorText(omniboxType)
             if (!errorText.isNullOrBlank()) data.add(errorText)

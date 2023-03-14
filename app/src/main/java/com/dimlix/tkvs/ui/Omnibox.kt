@@ -1,10 +1,12 @@
 package com.dimlix.tkvs.ui
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -65,8 +67,10 @@ internal fun OmniboxView(
     onTypeChanged: (TkvsViewModel.OmniboxType) -> Unit = {},
     onCommand: (TkvsViewModel.OmniboxType, String, String) -> Unit = { _, _, _ -> },
 ) {
-    var key by remember { mutableStateOf(TextFieldValue("")) }
-    var value by remember { mutableStateOf(TextFieldValue("")) }
+    var key by rememberSaveable(stateSaver = TextFieldValue.Saver) { mutableStateOf(TextFieldValue("")) }
+    var value by rememberSaveable(stateSaver = TextFieldValue.Saver) {
+        mutableStateOf(TextFieldValue(""))
+    }
     var expanded by remember { mutableStateOf(false) }
 
     val items = TkvsViewModel.OmniboxType.values()
@@ -76,7 +80,7 @@ internal fun OmniboxView(
         verticalAlignment = Alignment.CenterVertically
     ) {
         ExposedDropdownMenuBox(
-            modifier = modifier.width(130.dp),
+            modifier = modifier.weight(1f),
             expanded = expanded,
             onExpandedChange = {
                 expanded = !expanded
@@ -95,6 +99,7 @@ internal fun OmniboxView(
                 colors = ExposedDropdownMenuDefaults.textFieldColors()
             )
             ExposedDropdownMenu(
+                modifier = modifier.width(150.dp),
                 expanded = expanded,
                 onDismissRequest = { expanded = false }
             ) {
@@ -133,11 +138,15 @@ internal fun OmniboxView(
         } else {
             Spacer(modifier = modifier.width(8.dp))
         }
-        FloatingActionButton(
+        val isButtonEnabled =
+            (value.text.isNotBlank() || !isValueVisible(state))
+                    && (key.text.isNotBlank() || !isKeyVisible(state))
+        Button(
             modifier = modifier.size(48.dp),
-            backgroundColor = Color(0xff00897B),
+            shape = CircleShape,
+            enabled = isButtonEnabled,
             onClick = {
-                onCommand(state.type, key.text, value.text)
+                onCommand(state.type, key.text.trim(), value.text.trim())
                 key = TextFieldValue("")
                 value = TextFieldValue("")
             }
@@ -148,6 +157,7 @@ internal fun OmniboxView(
                 contentDescription = null
             )
         }
+        Spacer(modifier = modifier.width(8.dp))
     }
 }
 
@@ -247,7 +257,7 @@ private fun KeyPreview() {
 @Composable
 private fun ActionPreview() {
     TkvsTheme {
-        OmniboxView(state = TkvsViewModel.OmniboxState.Action(TkvsViewModel.OmniboxType.COMMIT))
+        OmniboxView(state = TkvsViewModel.OmniboxState.Action(TkvsViewModel.OmniboxType.ROLLBACK))
     }
 }
 
