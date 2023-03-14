@@ -42,9 +42,11 @@ class TkvsViewModel @Inject constructor(
         -> _omniboxState.value = OmniboxState.Action(commandType)
     }
 
-    fun applyCommand(omniboxType: OmniboxType, key: String, value: String) {
+    fun applyCommand(omniboxType: OmniboxType, key: String = "", value: String = "") {
         val data = _historyState.value
-        data.add(">$omniboxType $key $value")
+        val keyString = if (!key.isBlank()) " $key" else ""
+        val valueString = if (!value.isBlank()) " $value" else ""
+        data.add(">$omniboxType$keyString$valueString")
         when (omniboxType) {
             OmniboxType.GET -> keyValueRepository.proceed(Action.Get(key))
             OmniboxType.SET -> keyValueRepository.proceed(Action.Set(key, value))
