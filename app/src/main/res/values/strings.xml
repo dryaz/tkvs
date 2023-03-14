@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">tkvs</string>
+    <string name="key_not_set">Key not set</string>
+    <string name="no_trx">No transaction</string>
 </resources>

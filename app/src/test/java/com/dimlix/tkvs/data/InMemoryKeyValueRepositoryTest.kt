@@ -1,6 +1,8 @@
 package com.dimlix.tkvs.data
 
+import android.content.res.Resources.NotFoundException
 import com.dimlix.tkvs.domain.Action
+import io.kotlintest.matchers.numerics.shouldBeLessThan
 import io.kotlintest.matchers.types.shouldBeInstanceOf
 import io.kotlintest.shouldBe
 import org.junit.Test
@@ -18,7 +20,16 @@ internal class InMemoryKeyValueRepositoryTest {
     fun `Non set variable should be then get properly`() {
         val repository = InMemoryKeyValueRepository()
         repository.proceed(Action.Set("a", "1"))
-        repository.proceed(Action.Get("b")).getOrThrow() shouldBe null
+        repository.proceed(Action.Get("b")).exceptionOrNull()
+            .shouldBeInstanceOf<NotFoundException>()
+    }
+
+    @Test
+    fun `Non set variable can't be deleted`() {
+        val repository = InMemoryKeyValueRepository()
+        repository.proceed(Action.Set("a", "1"))
+        repository.proceed(Action.Delete("b")).exceptionOrNull()
+            .shouldBeInstanceOf<NotFoundException>()
     }
 
     @Test
@@ -26,7 +37,8 @@ internal class InMemoryKeyValueRepositoryTest {
         val repository = InMemoryKeyValueRepository()
         repository.proceed(Action.Set("a", "1"))
         repository.proceed(Action.Delete("a"))
-        repository.proceed(Action.Get("a")).getOrThrow() shouldBe null
+        repository.proceed(Action.Get("a")).exceptionOrNull()
+            .shouldBeInstanceOf<NotFoundException>()
     }
 
     @Test
@@ -61,7 +73,8 @@ internal class InMemoryKeyValueRepositoryTest {
         repository.proceed(Action.Set("a", "1"))
         repository.proceed(Action.BeginTransaction)
         repository.proceed(Action.Delete("a"))
-        repository.proceed(Action.Get("a")).getOrThrow() shouldBe null
+        repository.proceed(Action.Get("a")).exceptionOrNull()
+            .shouldBeInstanceOf<NotFoundException>()
     }
 
     @Test
@@ -178,11 +191,34 @@ internal class InMemoryKeyValueRepositoryTest {
         repository.proceed(Action.Rollback)
         repository.proceed(Action.Get("a")).getOrThrow() shouldBe "2"
         repository.proceed(Action.Get("b")).getOrThrow() shouldBe "1"
-        repository.proceed(Action.Get("c")).getOrThrow() shouldBe null
+        repository.proceed(Action.Get("c")).exceptionOrNull()
+            .shouldBeInstanceOf<NotFoundException>()
         repository.proceed(Action.Rollback)
         repository.proceed(Action.Get("a")).getOrThrow() shouldBe "1"
-        repository.proceed(Action.Get("b")).getOrThrow() shouldBe null
-        repository.proceed(Action.Get("c")).getOrThrow() shouldBe null
+        repository.proceed(Action.Get("b")).exceptionOrNull()
+            .shouldBeInstanceOf<NotFoundException>()
+        repository.proceed(Action.Get("c")).exceptionOrNull()
+            .shouldBeInstanceOf<NotFoundException>()
+    }
+
+    @Test
+    fun `Heavy load should not freeze repo`() {
+        val repository = InMemoryKeyValueRepository()
+        (0..1000).forEach {
+            repository.proceed(Action.BeginTransaction)
+            (0..1000).forEach {
+                repository.proceed(Action.Set("$it", "$it"))
+            }
+        }
+        val start = System.currentTimeMillis()
+        repository.proceed(Action.Set("abc", "1"))
+        repository.proceed(Action.Get("abc"))
+        repository.proceed(Action.Commit)
+        repository.proceed(Action.Rollback)
+        val diff = System.currentTimeMillis() - start
+        // Since KeyValueRepository supposed to be used in a sync way
+        // we should not block anything more then 16s.
+        diff shouldBeLessThan 15
     }
 
 }

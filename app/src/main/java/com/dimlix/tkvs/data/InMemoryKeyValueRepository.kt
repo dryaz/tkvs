@@ -1,5 +1,6 @@
 package com.dimlix.tkvs.data
 
+import android.content.res.Resources.NotFoundException
 import com.dimlix.tkvs.domain.Action
 import com.dimlix.tkvs.domain.KeyValueRepository
 import java.util.*
@@ -26,11 +27,21 @@ class InMemoryKeyValueRepository @Inject constructor() : KeyValueRepository {
         return Result.success(null)
     }
 
-    private fun get(key: String): Result<String?> = Result.success(storage.last.get(key))
+    private fun get(key: String): Result<String?> {
+        return if (storage.last.containsKey(key)) {
+            Result.success(storage.last.get(key))
+        } else {
+            Result.failure(NotFoundException())
+        }
+    }
 
     private fun delete(key: String): Result<String?> {
-        storage.last.remove(key)
-        return Result.success(null)
+        return if (storage.last.containsKey(key)) {
+            storage.last.remove(key)
+            Result.success(null)
+        } else {
+            Result.failure(NotFoundException())
+        }
     }
 
     private fun count(value: String): Result<String?> =
