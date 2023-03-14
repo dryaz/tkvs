@@ -2,4 +2,10 @@
     <string name="app_name">tkvs</string>
     <string name="key_not_set">Key not set</string>
     <string name="no_trx">No transaction</string>
+    <string name="key">Key</string>
+    <string name="value">Value</string>
+    <string name="confirm_action">Confirm your action</string>
+    <string name="action_to_confirm">You are going to perform \n>%s %s %s</string>
+    <string name="change_mind">Oops, NO!</string>
+    <string name="confirm">Confirm</string>
 </resources>

@@ -27,7 +27,7 @@ class TkvsActivity : ComponentActivity() {
                 // A surface container using the 'background' color from the theme
                 Surface(modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background) {
-                    Greeting("Android")
+                    Omnibox()
                 }
             }
         }
@@ -44,6 +44,6 @@ fun Greeting(name: String) {
 @Composable
 fun DefaultPreview() {
     TkvsTheme {
-        Greeting("Android")
+        Omnibox()
     }
 }

@@ -72,6 +72,10 @@ class TkvsViewModel @Inject constructor(
         else -> null
     }
 
+    // TODO: Omnibox state should have respective values (key and/or value) inside this UI model
+    //  in order to make cleanup logic testable inside viewModel, e.g. when command is applied
+    //  text inside omnibox should be cleared. Currently this logic is inside UI layer and won't be
+    //  tested via ViewModel Unit Test.
     sealed class OmniboxState(val type: OmniboxType) {
         class Action(type: OmniboxType) : OmniboxState(type)
         class KeyAction(type: OmniboxType) : OmniboxState(type)
