@@ -114,6 +114,8 @@ internal fun OmniboxView(
                 singleLine = true,
                 onValueChange = { key = it }
             )
+        }  else {
+            key = TextFieldValue("")
         }
         if (isValueVisible(state)) {
             Spacer(modifier = modifier.width(4.dp))
@@ -124,6 +126,8 @@ internal fun OmniboxView(
                 singleLine = true,
                 onValueChange = { value = it }
             )
+        } else {
+            value = TextFieldValue("")
         }
         if (!isValueVisible(state) && !isKeyVisible(state)) {
             Spacer(modifier = modifier.weight(1f))
