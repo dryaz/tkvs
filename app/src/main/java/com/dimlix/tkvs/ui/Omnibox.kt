@@ -14,35 +14,27 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.dimlix.tkvs.R
 import com.dimlix.tkvs.ui.theme.TkvsTheme
-
-private data class ConfirmationInfo(
-    val type: TkvsViewModel.OmniboxType,
-    val key: String,
-    val value: String,
-)
 
 @Composable
 fun Omnibox(
     modifier: Modifier = Modifier,
-    viewModel: TkvsViewModel = viewModel(),
+    state: TkvsViewModel.OmniboxState,
+    onTypeChanged: (TkvsViewModel.OmniboxType) -> Unit = {},
+    onCommand: (TkvsViewModel.OmniboxType, String, String) -> Unit = { _, _, _ -> },
 ) {
-    val omniboxState by viewModel.omniboxState.collectAsState()
     var confirmationInfo by remember { mutableStateOf<ConfirmationInfo?>(null) }
 
     OmniboxView(
         modifier,
-        omniboxState,
-        onTypeChanged = {
-            viewModel.selectOmniboxType((it))
-        },
+        state,
+        onTypeChanged,
         onCommand = { type, key, value ->
             if (isConfirmationNeeded(type)) {
                 confirmationInfo = ConfirmationInfo(type, key, value)
             } else {
-                viewModel.applyCommand(type, key, value)
+                onCommand(type, key, value)
             }
         }
     )
@@ -50,7 +42,7 @@ fun Omnibox(
     confirmationInfo?.let {
         ConfirmOperation(it.type, it.key, it.value,
             onConfirm = {
-                viewModel.applyCommand(it.type, it.key, it.value)
+                onCommand(it.type, it.key, it.value)
                 confirmationInfo = null
             }, onDismiss = {
                 confirmationInfo = null
@@ -199,6 +191,12 @@ private fun ConfirmOperation(
     )
 }
 
+private data class ConfirmationInfo(
+    val type: TkvsViewModel.OmniboxType,
+    val key: String,
+    val value: String,
+)
+
 private fun isConfirmationNeeded(operation: TkvsViewModel.OmniboxType): Boolean = when (operation) {
     TkvsViewModel.OmniboxType.DELETE,
     TkvsViewModel.OmniboxType.COMMIT,
@@ -233,7 +231,7 @@ private fun isValueVisible(state: TkvsViewModel.OmniboxState): Boolean = when (s
 @Composable
 private fun KeyValuePreview() {
     TkvsTheme {
-        OmniboxView(state = TkvsViewModel.OmniboxState.KeyValueAction(TkvsViewModel.OmniboxType.SET))
+        Omnibox(state = TkvsViewModel.OmniboxState.KeyValueAction(TkvsViewModel.OmniboxType.SET))
     }
 }
 
@@ -241,7 +239,7 @@ private fun KeyValuePreview() {
 @Composable
 private fun ValuePreview() {
     TkvsTheme {
-        OmniboxView(state = TkvsViewModel.OmniboxState.ValueAction(TkvsViewModel.OmniboxType.COUNT))
+        Omnibox(state = TkvsViewModel.OmniboxState.ValueAction(TkvsViewModel.OmniboxType.COUNT))
     }
 }
 
@@ -249,7 +247,7 @@ private fun ValuePreview() {
 @Composable
 private fun KeyPreview() {
     TkvsTheme {
-        OmniboxView(state = TkvsViewModel.OmniboxState.KeyAction(TkvsViewModel.OmniboxType.GET))
+        Omnibox(state = TkvsViewModel.OmniboxState.KeyAction(TkvsViewModel.OmniboxType.GET))
     }
 }
 
@@ -257,7 +255,7 @@ private fun KeyPreview() {
 @Composable
 private fun ActionPreview() {
     TkvsTheme {
-        OmniboxView(state = TkvsViewModel.OmniboxState.Action(TkvsViewModel.OmniboxType.ROLLBACK))
+        Omnibox(state = TkvsViewModel.OmniboxState.Action(TkvsViewModel.OmniboxType.ROLLBACK))
     }
 }
 
